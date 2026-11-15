@@ -3,9 +3,13 @@
 ## Product
 - Build a simplified Cal.com-style service for scheduling and booking calls; do not target full Cal.com feature parity.
 
+## Learning workflow
+- This is an educational project. At every substantial step, stop before acting and explain why the step is needed and what it will accomplish; proceed only after the user's confirmation.
+
 ## Current state
-- This is a greenfield repository with no application code or selected toolchain. The `README.md` setup and usage sections are placeholders.
-- No install, development, build, lint, typecheck, or test commands are defined. Verify commands from newly added manifests and scripts instead of guessing.
+- This is a greenfield repository with no application code or selected application toolchain.
+- Run `mise install` to install workflow-checking tools and `mise run check` to lint the OpenCode workflows. No application install, development, build, typecheck, or test commands are defined yet.
+- OpenCode runs from `/oc` and `/opencode` comments through `.github/workflows/opencode.yml`; its security exception is documented in `docs/adr/0001-opencode-via-github-actions.md`.
 - When introducing the stack, document exact setup, environment variables, startup, and verification commands in `README.md`; update this file with non-obvious workflows.
 
 ## Hexlet checks

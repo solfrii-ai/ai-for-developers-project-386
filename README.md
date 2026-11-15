@@ -10,20 +10,29 @@
 
 ## Стек
 
-- Разное
+- GitHub Actions
+- OpenCode
+- mise и jactionlint
 
 ## Установка
-
-<!-- Опишите установку: клонирование, зависимости, переменные окружения -->
 
 ```bash
 git clone https://github.com/solfrii-ai/ai-for-developers-project-386.git
 cd ai-for-developers-project-386
+mise install
 ```
 
-## Использование
+## Проверка workflow
 
-<!-- Добавьте примеры запуска и запись asciinema — именно это смотрит работодатель -->
+```bash
+mise run check
+```
+
+Команда запускает `jactionlint` для workflow OpenCode и его проверки. Та же проверка выполняется в CI для push в `main` и pull request.
+
+## OpenCode в issue и pull request
+
+Участники с ролями `OWNER`, `MEMBER` или `COLLABORATOR` могут запустить агента комментарием `/oc <задача>` или `/opencode <задача>`. Для работы workflow в репозитории должен быть настроен GitHub App `opencode-agent` и Actions-секрет `OPENCODE_API_KEY`; его значение не требуется для локальной проверки workflow.
 
 ---
 

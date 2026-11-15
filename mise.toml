@@ -1,0 +1,7 @@
+[tools]
+jactionlint = "2.6.0"
+
+[tasks.check]
+run = [
+  "jactionlint .github/workflows/opencode.yml .github/workflows/jactionlint.yml",
+]
