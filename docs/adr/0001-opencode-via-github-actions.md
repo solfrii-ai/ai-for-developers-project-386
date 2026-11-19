@@ -1,6 +1,6 @@
 # Интеграция OpenCode agent через GitHub Actions
 
-**Статус:** proposed
+**Статус:** accepted
 
 ## Контекст и мотивация
 
@@ -12,13 +12,16 @@
 - Агент запускается командами `/oc` и `/opencode` только от `OWNER`, `MEMBER` и `COLLABORATOR`.
 - Используются OIDC и GitHub App `opencode-agent`. `GITHUB_TOKEN` получает только `contents: read` и `id-token: write`;
   режим `use_github_token: true` отклонён, поскольку для полного сценария потребовал бы широких прав на запись.
+- Workflow `opencode-review.yml` запускается на `pull_request` (`opened`, `synchronize`, `reopened`,
+  `ready_for_review`) и использует ту же схему OIDC + GitHub App, закреплённую версию action и не использует
+  `use_github_token: true`.
 - API-ключ передаётся через секрет, публикация сессий отключена, код PR через checkout не выполняется.
 - Actions закреплены полными commit SHA; timeout и concurrency по issue/PR ограничивают ресурсы и конкурирующие запуски.
 - Workflow проверяются командой `mise run check`, которая запускает `jactionlint` локально и в CI.
 
 ## Model choice
 
-Все OpenCode workflow используют одну модель: `opencode/deepseek-v4.1-flash`.
+Оба OpenCode workflow (`opencode.yml` и `opencode-review.yml`) используют одну модель: `opencode/deepseek-v4.1-flash`.
 
 ## Исключение `dangerous-triggers`
 
@@ -32,4 +35,5 @@ prompt injection или компрометацию доверенной учёт
 
 ## Последствия
 
-Права GitHub App управляются отдельно от workflow. Остальные диагностики корректности и безопасности остаются активными.
+Права GitHub App управляются отдельно от workflow. Все OpenCode workflow теперь единообразны по схеме аутентификации
+и выбору модели. Остальные диагностики корректности и безопасности остаются активными.
