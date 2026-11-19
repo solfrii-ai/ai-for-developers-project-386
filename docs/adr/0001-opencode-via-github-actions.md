@@ -16,6 +16,10 @@
 - Actions закреплены полными commit SHA; timeout и concurrency по issue/PR ограничивают ресурсы и конкурирующие запуски.
 - Workflow проверяются командой `mise run check`, которая запускает `jactionlint` локально и в CI.
 
+## Model choice
+
+Все OpenCode workflow используют одну модель: `opencode/deepseek-v4.1-flash`.
+
 ## Исключение `dangerous-triggers`
 
 `issue_comment` является обязательным интерфейсом агента, но `jactionlint` сообщает о риске: workflow default branch
