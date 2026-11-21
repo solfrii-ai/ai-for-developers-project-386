@@ -10,14 +10,14 @@
 - Follow [CONTRIBUTING.md](CONTRIBUTING.md) when contributing to this repository.
 
 ## Current state
-- The pnpm workspace contains a minimal React + Vite + TypeScript frontend in `apps/frontend`; the stack is documented in `docs/adr/0002-technology-stack.md`.
-- Run `mise install` and `pnpm install` from the root. Use `pnpm dev` to start the frontend, `pnpm lint`, `pnpm test`, and `pnpm build` for application checks, and `mise run check` to lint the OpenCode workflows. No environment variables are required.
+- The pnpm workspace contains two apps: a React + Vite + TypeScript frontend in `apps/frontend` and a Node.js + Express backend in `apps/backend`. The stack is documented in `docs/adr/0002-technology-stack.md`.
+- Run `mise install` and `pnpm install` from the root. Dependencies stay in one shared `pnpm-lock.yaml`. Use `pnpm dev` to start both apps in parallel through pnpm, with no orchestrator package. The backend listens on port `3000`; Vite proxies `/api` to that port. Use `pnpm lint`, `pnpm test`, and `pnpm build` to check both apps, and `mise run check` to lint the OpenCode workflows. No environment variables are required.
 - OpenCode runs from `/opencode` comments through `.github/workflows/opencode.yml`; its security exception is documented in `docs/adr/0001-opencode-via-github-actions.md`.
 - See `README.md` for setup, startup, and verification details; update it and this file when workflows change.
 
 ## Hexlet checks
 - Do not edit, delete, or rename `.github/workflows/hexlet-check.yml`, and do not rename the repository. The generated workflow runs Hexlet checks on every push using the `HEXLET_ID` secret.
-- Hexlet tests become available as project steps are completed; the repository-local frontend smoke test runs through `pnpm test`.
+- Hexlet tests become available as project steps are completed; repository-local frontend and backend tests run through `pnpm test`.
 
 ## Agent skills
 

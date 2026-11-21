@@ -19,7 +19,9 @@
 
 ## Локальная разработка
 
-Для работы нужен [mise](https://mise.jdx.dev/). Он устанавливает зафиксированные в проекте версии Node.js `24.22.3` и pnpm `12.17.0`. Переменные окружения не требуются.
+Для работы нужен [mise](https://mise.jdx.dev/). Он устанавливает зафиксированные в проекте версии Node.js `24.22.3` и pnpm `12.17.0`. Обязательные переменные окружения не требуются.
+
+Workspace содержит два приложения: React + Vite frontend в `apps/frontend` и Node.js + Express backend в `apps/backend`.
 
 ### Установка
 
@@ -28,7 +30,7 @@ mise install
 pnpm install
 ```
 
-Зависимости всех приложений устанавливаются из корня pnpm workspace с общим `pnpm-lock.yaml`.
+Зависимости обоих приложений устанавливаются из корня pnpm workspace и фиксируются в одном общем `pnpm-lock.yaml`.
 
 ### Запуск
 
@@ -36,11 +38,15 @@ pnpm install
 pnpm dev
 ```
 
-Главная страница frontend доступна по адресу `http://localhost:5173/`.
+Команда средствами pnpm параллельно запускает frontend и backend. Отдельный пакет-оркестратор не используется.
+
+- Главная страница frontend доступна по адресу `http://localhost:5173/`.
+- Backend слушает порт `3000`. Прямая проверка: `http://localhost:3000/api/health`.
+- Vite проксирует запросы с префиксом `/api` на `http://localhost:3000`. Frontend вызывает API по относительному адресу `/api` без CORS и без переменных окружения.
 
 ### Проверки
 
-Из корня проекта выполняются все проверки:
+Из корня проекта выполняются проверки обоих приложений:
 
 ```sh
 pnpm lint
@@ -49,7 +55,7 @@ pnpm build
 mise run check
 ```
 
-`pnpm build` проверяет TypeScript и создаёт production-сборку frontend в `apps/frontend/dist`. `mise run check` проверяет существующие GitHub Actions workflows.
+`pnpm lint`, `pnpm test` и `pnpm build` охватывают frontend и backend. `pnpm build` проверяет TypeScript и создаёт production-сборки в `apps/frontend/dist` и `apps/backend/dist`. `mise run check` проверяет существующие GitHub Actions workflows.
 
 
 ## Роли
