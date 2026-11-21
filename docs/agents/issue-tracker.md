@@ -18,6 +18,15 @@ Infer the repo from `git remote -v`; `gh` does this automatically when run insid
 
 File issues only into the user's own repo. Never file into `mattpocock/skills` (the repo these skills come from) unless the user owns it. In a fork, `gh` can default to the upstream parent, so before the first `gh issue create` of a session, check the target with `gh repo view --json nameWithOwner` and confirm it with the user if it is not their repo.
 
+### Closing implementation work
+
+Implementation work closes through PRs: **yes**.
+
+Implementation issues remain open until their PR is merged into the target branch.
+A local or pushed branch is not sufficient grounds for closure.
+
+Manual comment + close is allowed only for non-code issues or work already confirmed as merged into the target branch.
+
 ## Pull requests as a triage surface
 
 **PRs as a request surface: no.** _(Set to `yes` if this repo treats external PRs as feature requests; `/triage` reads this flag.)_
