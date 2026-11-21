@@ -29,10 +29,11 @@ jobs:
         uses: anomalyco/opencode/github@f4e363c8295fa90a03dddc451882fffe8fbce357 # v1.19.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # action v1.19.6 читает переменную TOKEN, а не USE_GITHUB_TOKEN из with.use_github_token
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         with:
           model: opencode/deepseek-v4.1-flash
-          use_github_token: true
           share: "false"
           prompt: |
             Review this pull request:

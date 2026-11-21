@@ -14,10 +14,11 @@
   `contents: read` и `id-token: write`; режим `use_github_token: true` отклонён, поскольку для полного сценария
   потребовал бы широких прав на запись.
 - Workflow `opencode-review.yml` запускается на `pull_request` (`opened`, `synchronize`, `reopened`,
-  `ready_for_review`) и использует `GITHUB_TOKEN` с правами `contents: read` и `pull-requests: write`, а также
-  `use_github_token: true`. OIDC + GitHub App не подходят для этого сценария, потому что PR, созданные ботом
-  `opencode-agent[bot]`, запускают workflow от имени бота, а проверка прав коллаборатора для бота возвращает
-  `none`, что не позволяет опубликовать review comment.
+  `ready_for_review`) и использует `GITHUB_TOKEN` с правами `contents: read` и `pull-requests: write`. Версия action
+  `v1.19.6` читает токен из переменной окружения `TOKEN`, поэтому `GITHUB_TOKEN` дополнительно передаётся как `TOKEN`.
+  OIDC + GitHub App не подходят для этого сценария, потому что PR, созданные ботом `opencode-agent[bot]`, запускают
+  workflow от имени бота, а проверка прав коллаборатора для бота возвращает `none`, что не позволяет опубликовать
+  review comment.
 - API-ключ передаётся через секрет, публикация сессий отключена, код PR через checkout не выполняется.
 - Actions закреплены полными commit SHA; timeout и concurrency по issue/PR ограничивают ресурсы и конкурирующие запуски.
 - Workflow проверяются командой `mise run check`, которая запускает `jactionlint` локально и в CI.
