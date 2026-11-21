@@ -1,0 +1,11 @@
+{
+  "name": "calendar-calls",
+  "private": true,
+  "packageManager": "pnpm@12.17.0",
+  "scripts": {
+    "dev": "pnpm --filter frontend dev",
+    "lint": "pnpm --filter frontend lint",
+    "test": "pnpm --filter frontend test",
+    "build": "pnpm --filter frontend build"
+  }
+}
