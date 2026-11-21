@@ -27,6 +27,13 @@
 
 Оба OpenCode workflow (`opencode.yml` и `opencode-review.yml`) используют одну модель: `opencode/deepseek-v4.1-flash`.
 
+## OpenCode GitHub Action
+
+- Репозиторий action: https://github.com/anomalyco/opencode
+- Используемая закреплённая версия: `anomalyco/opencode/github@f4e363c8295fa90a03dddc451882fffe8fbce357` (`v1.19.6`).
+- В `v1.19.6` runtime читает GitHub-токен из переменной окружения `TOKEN`, а не из `with.use_github_token`, что
+  обусловливает workaround в `opencode-review.yml`.
+
 ## Исключение `dangerous-triggers`
 
 `issue_comment` является обязательным интерфейсом агента, но `jactionlint` сообщает о риске: workflow default branch
