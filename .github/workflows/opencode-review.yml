@@ -4,21 +4,23 @@ name: opencode-review
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [ready_for_review]
 
 permissions: {}
 
 concurrency:
   group: opencode-review-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   review:
+    if: github.event.sender.type == 'User'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
       contents: read
-      pull-requests: write
+      pull-requests: read
+      issues: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -29,10 +31,8 @@ jobs:
         uses: anomalyco/opencode/github@f4e363c8295fa90a03dddc451882fffe8fbce357 # v1.19.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # action проверяет права актора через API коллабораторов; для PR от бота права равны none.
-          # Переопределяем GITHUB_ACTOR на владельца репозитория, чтобы обойти эту проверку.
-          GITHUB_ACTOR: ${{ github.repository_owner }}
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          OPENCODE_CONFIG_CONTENT: '{"small_model":"opencode/deepseek-v4.1-flash"}'
         with:
           model: opencode/deepseek-v4.1-flash
           use_github_token: true
