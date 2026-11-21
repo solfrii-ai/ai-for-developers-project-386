@@ -32,3 +32,7 @@ Triage uses the five canonical labels: `needs-triage`, `needs-info`, `ready-for-
 ### Domain docs
 
 Domain docs use a single-context layout: root `GLOSSARY.md` and `docs/adr/`. See `docs/agents/domain.md`.
+
+### Research
+
+Web research follows `docs/agents/research.md`. When dispatching a research subagent, pass that file in its prompt.
