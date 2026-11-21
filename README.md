@@ -28,11 +28,13 @@ mise install
 mise run check
 ```
 
-Команда запускает `jactionlint` для workflow OpenCode и его проверки. Та же проверка выполняется в CI для push в `main` и pull request.
+Команда запускает `jactionlint` для workflow OpenCode (`opencode.yml` и `opencode-review.yml`) и их проверки. Та же проверка выполняется в CI для push в `main` и pull request.
 
 ## OpenCode в issue и pull request
 
 Участники с ролями `OWNER`, `MEMBER` или `COLLABORATOR` могут запустить агента комментарием `/oc <задача>` или `/opencode <задача>`. Для работы workflow в репозитории должен быть настроен GitHub App `opencode-agent` и Actions-секрет `OPENCODE_API_KEY`; его значение не требуется для локальной проверки workflow.
+
+Workflow `opencode-review.yml` автоматически запускается при открытии и обновлении pull request.
 
 ---
 
