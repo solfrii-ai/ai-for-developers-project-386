@@ -3,6 +3,9 @@
 ## Product
 - Build a simplified Cal.com-style service for scheduling and booking calls; do not target full Cal.com feature parity.
 
+## UI sketches
+- When building or changing a screen, read [docs/design/README.md](docs/design/README.md) and open the PNGs it names. Those sketches are the visual reference; product rules stay in [README.md](README.md).
+
 ## Learning workflow
 - This is an educational project. At every substantial step, stop before acting and explain why the step is needed and what it will accomplish; proceed only after the user's confirmation.
 
