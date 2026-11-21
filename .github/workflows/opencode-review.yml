@@ -1,3 +1,5 @@
+# Origin: https://opencode.ai/v1/docs/github/#pull-request-example
+
 name: opencode-review
 
 on:
@@ -12,7 +14,7 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v6
-      - uses: anomalyco/opencode/github@810c0eba1a7348036f8bdf61e6632d0c36c6876c # v1.19.5
+      - uses: anomalyco/opencode/github@latest
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         with:
