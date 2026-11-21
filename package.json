@@ -3,9 +3,9 @@
   "private": true,
   "packageManager": "pnpm@12.17.0",
   "scripts": {
-    "dev": "pnpm --filter frontend dev",
-    "lint": "pnpm --filter frontend lint",
-    "test": "pnpm --filter frontend test",
-    "build": "pnpm --filter frontend build"
+    "dev": "pnpm --recursive --parallel dev",
+    "lint": "pnpm --recursive lint",
+    "test": "pnpm --recursive test",
+    "build": "pnpm --recursive build"
   }
 }
