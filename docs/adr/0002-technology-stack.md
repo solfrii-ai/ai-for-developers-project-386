@@ -6,6 +6,8 @@
 
 Frontend и backend разрабатываются как отдельные TypeScript-приложения в pnpm workspace: React + Vite и Node.js + Express. Единый язык упрощает работу с контрактными типами, а workspace даёт общую установку зависимостей и lockfile без объединения приложений в единый runtime.
 
+Для UI используются shadcn/ui и Tailwind CSS. Компоненты добавляются в исходный код frontend через shadcn CLI. Для их поиска и установки AI-ассистентами используется [shadcn MCP Server](https://ui.shadcn.com/docs/mcp); он нужен только при разработке и не входит в runtime приложения.
+
 API описывается через TypeSpec и компилируется в OpenAPI. Спецификация используется для валидации Express (`express-openapi-validator`) и генерации типизированного frontend-клиента (`openapi-typescript` + `openapi-fetch`). Это уменьшает расхождение контракта и реализации.
 
 Текущая БД — PGLite, доступ осуществляется через Drizzle ORM с PostgreSQL-схемой (`pg-core`) и миграциями. PGLite не требует отдельного сервера, а PostgreSQL-диалект и изоляция подключения упрощают будущий переход на полноценный PostgreSQL: преимущественно меняется DB-адаптер, а схема и запросы сохраняются.
