@@ -9,7 +9,7 @@
 ## Current state
 - This is a greenfield repository with no application code or selected application toolchain.
 - Run `mise install` to install workflow-checking tools and `mise run check` to lint the OpenCode workflows. No application install, development, build, typecheck, or test commands are defined yet.
-- OpenCode runs from `/oc` and `/opencode` comments through `.github/workflows/opencode.yml`; its security exception is documented in `docs/adr/0001-opencode-via-github-actions.md`.
+- OpenCode runs from `/opencode` comments through `.github/workflows/opencode.yml`; its security exception is documented in `docs/adr/0001-opencode-via-github-actions.md`.
 - When introducing the stack, document exact setup, environment variables, startup, and verification commands in `README.md`; update this file with non-obvious workflows.
 
 ## Hexlet checks
