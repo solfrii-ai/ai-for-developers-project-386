@@ -6,6 +6,9 @@
 ## Learning workflow
 - This is an educational project. At every substantial step, stop before acting and explain why the step is needed and what it will accomplish; proceed only after the user's confirmation.
 
+## Contributing
+- Follow [CONTRIBUTING.md](CONTRIBUTING.md) when contributing to this repository.
+
 ## Current state
 - This is a greenfield repository with no application code or selected application toolchain.
 - Run `mise install` to install workflow-checking tools and `mise run check` to lint the OpenCode workflows. No application install, development, build, typecheck, or test commands are defined yet.
