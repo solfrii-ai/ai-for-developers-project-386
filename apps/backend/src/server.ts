@@ -1,5 +1,9 @@
-import { app } from './app.ts'
+import { app, serveStatic } from './app.ts'
 
-const port = 3000
+const port = Number(process.env.PORT ?? 3000)
 
-app.listen(port)
+if (process.env.STATIC_DIR) {
+  serveStatic(process.env.STATIC_DIR)
+}
+
+app.listen(port, '0.0.0.0')
