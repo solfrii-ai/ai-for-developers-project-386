@@ -15,10 +15,11 @@
   потребовал бы широких прав на запись.
 - Workflow `opencode-review.yml` запускается на `pull_request` (`opened`, `synchronize`, `reopened`,
   `ready_for_review`) от имени любого актора, включая бота `opencode-agent[bot]`. Он использует `GITHUB_TOKEN` с
-  правами `contents: read` и `pull-requests: write`, а также `use_github_token: true`. Для PR от людей это позволяет
-  публиковать review comments. Для PR, автором которых является `opencode-agent[bot]`, action `v1.19.6` всё равно
-  проверяет права актора через API коллабораторов; бота нельзя добавить вручную как collaborator, поэтому такие run'ы
-  завершаются ошибкой прав. Это известное ограничение текущей версии action.
+  правами `contents: read` и `pull-requests: write`, а также `use_github_token: true`. Action `v1.19.6` проверяет права
+  актора через API коллабораторов; бота нельзя добавить вручную как collaborator, поэтому для PR от бота проверка
+  возвращает `none`. Чтобы обойти это, в шаге `Run OpenCode` переопределяется переменная окружения `GITHUB_ACTOR` на
+  `github.repository_owner` — у владельца репозитория права `admin`, и action продолжает работу, используя `GITHUB_TOKEN`
+  для публикации review comments.
 - API-ключ передаётся через секрет, публикация сессий отключена, код PR через checkout не выполняется.
 - Actions закреплены полными commit SHA; timeout и concurrency по issue/PR ограничивают ресурсы и конкурирующие запуски.
 - Workflow проверяются командой `mise run check`, которая запускает `jactionlint` локально и в CI.
@@ -33,8 +34,10 @@
 - Используемая закреплённая версия: `anomalyco/opencode/github@f4e363c8295fa90a03dddc451882fffe8fbce357` (`v1.19.6`).
 - Код action для этой версии: https://github.com/anomalyco/opencode/blob/f4e363c8295fa90a03dddc451882fffe8fbce357/github/index.ts.
   Именно там находятся логика `assertPermissions`, `getAccessToken` и выбор между `GITHUB_TOKEN` и OIDC.
-- В `v1.19.6` проверка прав актора выполняется через API коллабораторов репозитория, из-за чего PR, созданные
-  `opencode-agent[bot]`, не проходят автоматический review.
+- В `v1.19.6` проверка прав актора выполняется через API коллабораторов репозитория (`assertPermissions`),
+  при этом `actor` берётся из переменной окружения `GITHUB_ACTOR`. Переопределение `GITHUB_ACTOR` на
+  `github.repository_owner` позволяет пройти проверку для PR, созданных `opencode-agent[bot]`, не добавляя бота в
+  collaborators.
 
 ## Исключение `dangerous-triggers`
 
