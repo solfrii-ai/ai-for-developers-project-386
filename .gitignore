@@ -1,6 +1,10 @@
 .idea/
 *.iml
 
+node_modules/
+dist/
+coverage/
+
 opencode*/
 
 TODO.md

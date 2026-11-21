@@ -17,6 +17,41 @@
 Как это должно работать: https://files.hexlet.app/a/2ipc5m
 
 
+## Локальная разработка
+
+Для работы нужен [mise](https://mise.jdx.dev/). Он устанавливает зафиксированные в проекте версии Node.js `24.22.3` и pnpm `12.17.0`. Переменные окружения не требуются.
+
+### Установка
+
+```sh
+mise install
+pnpm install
+```
+
+Зависимости всех приложений устанавливаются из корня pnpm workspace с общим `pnpm-lock.yaml`.
+
+### Запуск
+
+```sh
+pnpm dev
+```
+
+Главная страница frontend доступна по адресу `http://localhost:5173/`.
+
+### Проверки
+
+Из корня проекта выполняются все проверки:
+
+```sh
+pnpm lint
+pnpm test
+pnpm build
+mise run check
+```
+
+`pnpm build` проверяет TypeScript и создаёт production-сборку frontend в `apps/frontend/dist`. `mise run check` проверяет существующие GitHub Actions workflows.
+
+
 ## Роли
 
 ### Владелец
