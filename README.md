@@ -34,7 +34,7 @@ mise run check
 
 Участники с ролями `OWNER`, `MEMBER` или `COLLABORATOR` могут запустить агента комментарием `/oc <задача>` или `/opencode <задача>`. Для работы workflow в репозитории должен быть настроен GitHub App `opencode-agent` и Actions-секрет `OPENCODE_API_KEY`; его значение не требуется для локальной проверки workflow.
 
-Workflow `opencode-review.yml` автоматически запускается при открытии и обновлении pull request.
+Workflow `opencode-review.yml` автоматически запускается при открытии и обновлении pull request. Для публикации review comments он использует `GITHUB_TOKEN` с правом `pull-requests: write`, потому что PR, созданные ботом `opencode-agent[bot]`, не проходят проверку прав коллаборатора при аутентификации через OIDC.
 
 ---
 

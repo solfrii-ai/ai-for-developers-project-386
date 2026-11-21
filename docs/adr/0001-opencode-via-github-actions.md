@@ -10,11 +10,14 @@
 ## Решение
 
 - Агент запускается командами `/oc` и `/opencode` только от `OWNER`, `MEMBER` и `COLLABORATOR`.
-- Используются OIDC и GitHub App `opencode-agent`. `GITHUB_TOKEN` получает только `contents: read` и `id-token: write`;
-  режим `use_github_token: true` отклонён, поскольку для полного сценария потребовал бы широких прав на запись.
+- Workflow `opencode.yml` использует OIDC и GitHub App `opencode-agent`. `GITHUB_TOKEN` получает только
+  `contents: read` и `id-token: write`; режим `use_github_token: true` отклонён, поскольку для полного сценария
+  потребовал бы широких прав на запись.
 - Workflow `opencode-review.yml` запускается на `pull_request` (`opened`, `synchronize`, `reopened`,
-  `ready_for_review`) и использует ту же схему OIDC + GitHub App, закреплённую версию action и не использует
-  `use_github_token: true`.
+  `ready_for_review`) и использует `GITHUB_TOKEN` с правами `contents: read` и `pull-requests: write`, а также
+  `use_github_token: true`. OIDC + GitHub App не подходят для этого сценария, потому что PR, созданные ботом
+  `opencode-agent[bot]`, запускают workflow от имени бота, а проверка прав коллаборатора для бота возвращает
+  `none`, что не позволяет опубликовать review comment.
 - API-ключ передаётся через секрет, публикация сессий отключена, код PR через checkout не выполняется.
 - Actions закреплены полными commit SHA; timeout и concurrency по issue/PR ограничивают ресурсы и конкурирующие запуски.
 - Workflow проверяются командой `mise run check`, которая запускает `jactionlint` локально и в CI.
@@ -35,5 +38,7 @@ prompt injection или компрометацию доверенной учёт
 
 ## Последствия
 
-Права GitHub App управляются отдельно от workflow. Все OpenCode workflow теперь единообразны по схеме аутентификации
-и выбору модели. Остальные диагностики корректности и безопасности остаются активными.
+Права GitHub App управляются отдельно от workflow. Workflow `opencode.yml` остаётся на OIDC + GitHub App,
+а `opencode-review.yml` использует ограниченный `GITHUB_TOKEN` для публикации review comments. Оба workflow
+по-прежнему используют одну модель, закрепленные версии action, timeout и concurrency. Остальные диагностики
+корректности и безопасности остаются активными.
