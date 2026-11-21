@@ -14,11 +14,11 @@
   `contents: read` и `id-token: write`; режим `use_github_token: true` отклонён, поскольку для полного сценария
   потребовал бы широких прав на запись.
 - Workflow `opencode-review.yml` запускается на `pull_request` (`opened`, `synchronize`, `reopened`,
-  `ready_for_review`) и использует `GITHUB_TOKEN` с правами `contents: read` и `pull-requests: write`. Версия action
-  `v1.19.6` читает токен из переменной окружения `TOKEN`, поэтому `GITHUB_TOKEN` дополнительно передаётся как `TOKEN`.
-  OIDC + GitHub App не подходят для этого сценария, потому что PR, созданные ботом `opencode-agent[bot]`, запускают
-  workflow от имени бота, а проверка прав коллаборатора для бота возвращает `none`, что не позволяет опубликовать
-  review comment.
+  `ready_for_review`) от имени любого актора, включая бота `opencode-agent[bot]`. Он использует `GITHUB_TOKEN` с
+  правами `contents: read` и `pull-requests: write`, а также `use_github_token: true`. Для PR от людей это позволяет
+  публиковать review comments. Для PR, автором которых является `opencode-agent[bot]`, action `v1.19.6` всё равно
+  проверяет права актора через API коллабораторов; бота нельзя добавить вручную как collaborator, поэтому такие run'ы
+  завершаются ошибкой прав. Это известное ограничение текущей версии action.
 - API-ключ передаётся через секрет, публикация сессий отключена, код PR через checkout не выполняется.
 - Actions закреплены полными commit SHA; timeout и concurrency по issue/PR ограничивают ресурсы и конкурирующие запуски.
 - Workflow проверяются командой `mise run check`, которая запускает `jactionlint` локально и в CI.
@@ -31,8 +31,10 @@
 
 - Репозиторий action: https://github.com/anomalyco/opencode
 - Используемая закреплённая версия: `anomalyco/opencode/github@f4e363c8295fa90a03dddc451882fffe8fbce357` (`v1.19.6`).
-- В `v1.19.6` runtime читает GitHub-токен из переменной окружения `TOKEN`, а не из `with.use_github_token`, что
-  обусловливает workaround в `opencode-review.yml`.
+- Код action для этой версии: https://github.com/anomalyco/opencode/blob/f4e363c8295fa90a03dddc451882fffe8fbce357/github/index.ts.
+  Именно там находятся логика `assertPermissions`, `getAccessToken` и выбор между `GITHUB_TOKEN` и OIDC.
+- В `v1.19.6` проверка прав актора выполняется через API коллабораторов репозитория, из-за чего PR, созданные
+  `opencode-agent[bot]`, не проходят автоматический review.
 
 ## Исключение `dangerous-triggers`
 
