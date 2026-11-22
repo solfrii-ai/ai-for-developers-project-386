@@ -194,3 +194,25 @@ test('POST /api/meeting-types creates a trimmed Russian type with an automatic i
     await rm(dataDir, { recursive: true, force: true })
   }
 })
+
+test('GET /api/meeting-types/:id returns a saved type and reports an unknown id', async () => {
+  const dataDir = await mkdtemp(path.join(tmpdir(), 'meeting-types-'))
+  const { app, close } = await createApplication({ dataDir })
+
+  try {
+    const created = await request(app).post('/api/meeting-types').send({
+      name: 'Знакомство',
+      description: 'Обсуждаем цели и контекст',
+      duration: 15,
+    })
+    const found = await request(app).get(`/api/meeting-types/${created.body.id}`)
+    const missing = await request(app).get('/api/meeting-types/aaa-aaaaa')
+
+    expect(found.status).toBe(200)
+    expect(found.body).toEqual(created.body)
+    expect(missing.status).toBe(404)
+  } finally {
+    await close()
+    await rm(dataDir, { recursive: true, force: true })
+  }
+})
