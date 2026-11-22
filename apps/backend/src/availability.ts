@@ -27,7 +27,11 @@ function formatDate(date: Date) {
   return `${date.getUTCFullYear()}-${month}-${dayOfMonth}`
 }
 
-export function availabilityFor(durationMinutes: number, now: Date): Availability {
+function overlaps(start: Date, end: Date, occupied: AvailabilitySlot[]) {
+  return occupied.some((interval) => new Date(interval.start) < end && start < new Date(interval.end))
+}
+
+export function availabilityFor(durationMinutes: number, now: Date, occupied: AvailabilitySlot[] = []): Availability {
   const days: AvailabilityDay[] = []
   const slots: AvailabilitySlot[] = []
 
@@ -43,6 +47,9 @@ export function availabilityFor(durationMinutes: number, now: Date): Availabilit
           continue
         }
         const end = new Date(start.getTime() + durationMinutes * minute)
+        if (overlaps(start, end, occupied)) {
+          continue
+        }
         slots.push({ start: start.toISOString(), end: end.toISOString() })
         freeCount += 1
       }

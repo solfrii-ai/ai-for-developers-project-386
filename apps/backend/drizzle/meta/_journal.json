@@ -8,6 +8,13 @@
       "when": 1795346307809,
       "tag": "0000_shallow_skreet",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795346400000,
+      "tag": "0001_meetings",
+      "breakpoints": true
     }
   ]
 }

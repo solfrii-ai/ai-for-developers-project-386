@@ -5,7 +5,7 @@ import express, { type ErrorRequestHandler } from 'express'
 import * as OpenApiValidator from 'express-openapi-validator'
 import { availabilityFor } from './availability.ts'
 import { createDatabase } from './db/client.ts'
-import { meetingTypes } from './db/schema.ts'
+import { meetingTypes, meetings } from './db/schema.ts'
 
 type MeetingType = {
   id: string
@@ -17,6 +17,41 @@ type MeetingType = {
 type RequestValidationError = {
   status: number
   errors: { path?: string, message: string }[]
+}
+
+const conflictMessage = 'Встреча не создана: выбранный слот уже занят. Выберите другой свободный слот.'
+
+function isGuestEmail(value: string) {
+  if (/\s/u.test(value)) {
+    return false
+  }
+  const parts = value.split('@')
+  if (parts.length !== 2) {
+    return false
+  }
+  const [local, domain] = parts
+  if (!local || !domain) {
+    return false
+  }
+  const labels = domain.split('.')
+  return labels.length >= 2 && labels.every((label) => label.length > 0)
+}
+
+function isExclusionViolation(error: unknown) {
+  const queue = [error]
+  while (queue.length > 0) {
+    const current = queue.shift()
+    if (!current || typeof current !== 'object') {
+      continue
+    }
+    if ('code' in current && current.code === '23P01') {
+      return true
+    }
+    if ('cause' in current) {
+      queue.push(current.cause)
+    }
+  }
+  return false
 }
 
 function generateId(types: MeetingType[]) {
@@ -81,11 +116,22 @@ export async function createApplication({
     }
     next()
   })
-  application.use('/api/meeting-types', OpenApiValidator.middleware({
+  const openApi = OpenApiValidator.middleware({
     apiSpec: fileURLToPath(new URL('../generated/openapi.json', import.meta.url)),
     validateRequests: true,
     validateResponses: true,
-  }))
+  })
+  application.use('/api/meeting-types', openApi)
+  application.use('/api/bookings', (request: express.Request, _response: express.Response, next: express.NextFunction) => {
+    if (request.method === 'POST' && request.body) {
+      request.body = {
+        ...request.body,
+        guestName: typeof request.body.guestName === 'string' ? request.body.guestName.trim() : request.body.guestName,
+        guestEmail: typeof request.body.guestEmail === 'string' ? request.body.guestEmail.trim() : request.body.guestEmail,
+      }
+    }
+    next()
+  }, openApi)
 
   application.get('/api/meeting-types', async (_request, response) => {
     response.status(200).json(await listTypes())
@@ -117,7 +163,84 @@ export async function createApplication({
       return
     }
 
-    response.status(200).json(availabilityFor(type.duration, now()))
+    const occupied = await db.select({
+      startAt: meetings.startAt,
+      endAt: meetings.endAt,
+    }).from(meetings)
+    response.status(200).json(availabilityFor(type.duration, now(), occupied.map((interval) => ({
+      start: interval.startAt.toISOString(),
+      end: interval.endAt.toISOString(),
+    }))))
+  })
+
+  application.post('/api/bookings', async (request, response) => {
+    const guestName = typeof request.body.guestName === 'string' ? request.body.guestName.trim() : ''
+    const guestEmail = typeof request.body.guestEmail === 'string' ? request.body.guestEmail.trim() : ''
+    const errors: { field: string, message: string }[] = []
+
+    if (!guestName) {
+      errors.push({ field: 'guestName', message: 'Введите имя' })
+    } else if (guestName.length > 100) {
+      errors.push({ field: 'guestName', message: 'Имя должно содержать не более 100 символов' })
+    }
+    if (!guestEmail) {
+      errors.push({ field: 'guestEmail', message: 'Введите почту' })
+    } else if (guestEmail.length > 254) {
+      errors.push({ field: 'guestEmail', message: 'Почта должна содержать не более 254 символов' })
+    } else if (!isGuestEmail(guestEmail)) {
+      errors.push({ field: 'guestEmail', message: 'Введите почту в виде имя@домен.зона' })
+    }
+    if (errors.length > 0) {
+      response.status(400).json({ message: 'Проверьте поля формы', errors })
+      return
+    }
+
+    const [type] = await db.select({
+      id: meetingTypes.id,
+      name: meetingTypes.name,
+      duration: meetingTypes.duration,
+    }).from(meetingTypes).where(eq(meetingTypes.id, request.body.meetingTypeId)).limit(1)
+    if (!type) {
+      response.status(404).json({ message: 'Тип встречи не найден' })
+      return
+    }
+
+    const offered = availabilityFor(type.duration, now()).slots.find((slot) => slot.start === new Date(request.body.start).toISOString())
+    if (!offered) {
+      response.status(400).json({
+        message: 'Проверьте поля формы',
+        errors: [{ field: 'start', message: 'Выберите свободный слот' }],
+      })
+      return
+    }
+
+    const createdAt = now()
+    try {
+      await db.insert(meetings).values({
+        meetingTypeId: type.id,
+        startAt: new Date(offered.start),
+        endAt: new Date(offered.end),
+        guestName,
+        guestEmail,
+        createdAt,
+      })
+    } catch (error) {
+      if (isExclusionViolation(error)) {
+        response.status(409).json({ message: conflictMessage })
+        return
+      }
+      throw error
+    }
+
+    response.status(201).json({
+      meetingTypeId: type.id,
+      meetingTypeName: type.name,
+      start: offered.start,
+      end: offered.end,
+      guestName,
+      guestEmail,
+      createdAt: createdAt.toISOString(),
+    })
   })
 
   application.post('/api/meeting-types', async (request, response) => {
