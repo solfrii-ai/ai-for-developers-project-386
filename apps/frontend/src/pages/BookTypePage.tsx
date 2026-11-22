@@ -311,16 +311,18 @@ export default function BookTypePage({ id }: { id: string }) {
                     <Button type="submit" disabled={submitting} className="bg-slate-950 text-white hover:bg-slate-800">{submitting ? 'Подтверждение…' : 'Подтвердить бронирование'}</Button>
                   </div>
                 </form>
-              ) : windowEmpty ? (
-                <div className="mt-4">
-                  <p className="rounded-lg bg-slate-100 p-4 text-sm text-slate-600">В ближайшие 14 дней свободных слотов нет</p>
-                  <a href="/book" className="mt-4 inline-flex text-sm font-medium text-slate-700 underline underline-offset-4">Выбрать другой тип встречи</a>
-                </div>
-              ) : selectedDay?.freeCount === 0 ? (
-                <p className="mt-4 rounded-lg bg-slate-100 p-4 text-sm text-slate-600">На эту дату свободных слотов нет. Выберите другую дату</p>
               ) : (
-                <div className="mt-4 space-y-2">
+                <div className="mt-4 space-y-3">
                   {conflict && <p role="alert" className="rounded-lg bg-red-50 p-4 text-sm text-red-700">{conflict}</p>}
+                  {windowEmpty ? (
+                    <div>
+                      <p className="rounded-lg bg-slate-100 p-4 text-sm text-slate-600">В ближайшие 14 дней свободных слотов нет</p>
+                      <a href="/book" className="mt-4 inline-flex text-sm font-medium text-slate-700 underline underline-offset-4">Выбрать другой тип встречи</a>
+                    </div>
+                  ) : selectedDay?.freeCount === 0 ? (
+                    <p className="rounded-lg bg-slate-100 p-4 text-sm text-slate-600">На эту дату свободных слотов нет. Выберите другую дату</p>
+                  ) : (
+                    <div className="space-y-2">
                   {slots.map((slot) => (
                     <button
                       key={slot.start}
@@ -337,6 +339,8 @@ export default function BookTypePage({ id }: { id: string }) {
                     </button>
                   ))}
                   <Button type="button" disabled={!selectedSlot} onClick={() => setView('confirm')} className="mt-2 w-full bg-slate-950 text-white hover:bg-slate-800">Продолжить</Button>
+                    </div>
+                  )}
                 </div>
               )}
             </section>
