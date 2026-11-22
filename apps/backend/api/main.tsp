@@ -51,6 +51,21 @@ model MeetingTypeCreated {
   @body body: MeetingType;
 }
 
+model AvailabilitySlot {
+  start: utcDateTime;
+  end: utcDateTime;
+}
+
+model AvailabilityDay {
+  date: string;
+  freeCount: int32;
+}
+
+model Availability {
+  days: AvailabilityDay[];
+  slots: AvailabilitySlot[];
+}
+
 model NotFoundResponse {
   message: string;
 }
@@ -71,5 +86,6 @@ model ValidationError {
 interface MeetingTypeOperations {
   @get list(): MeetingType[];
   @get @route("/{id}") read(@path id: string): MeetingType | MeetingTypeNotFound;
+  @get @route("/{id}/availability") availability(@path id: string): Availability | MeetingTypeNotFound;
   @post create(@body body: CreateMeetingType): MeetingTypeCreated | ValidationError;
 }

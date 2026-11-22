@@ -99,10 +99,101 @@
           }
         }
       }
+    },
+    "/api/meeting-types/{id}/availability": {
+      "get": {
+        "operationId": "MeetingTypeOperations_availability",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Availability"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The server cannot find the requested resource.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "Availability": {
+        "type": "object",
+        "required": [
+          "days",
+          "slots"
+        ],
+        "properties": {
+          "days": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AvailabilityDay"
+            }
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AvailabilitySlot"
+            }
+          }
+        }
+      },
+      "AvailabilityDay": {
+        "type": "object",
+        "required": [
+          "date",
+          "freeCount"
+        ],
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "freeCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "AvailabilitySlot": {
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "CreateMeetingType": {
         "type": "object",
         "required": [
