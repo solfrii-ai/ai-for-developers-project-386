@@ -11,8 +11,8 @@ RUN pnpm install --frozen-lockfile
 
 COPY apps apps
 
-RUN pnpm --filter frontend build
 RUN pnpm --filter backend build
+RUN pnpm --filter frontend build
 RUN pnpm --filter backend deploy --prod /out
 
 FROM node:24.22.3-bookworm-slim
@@ -25,6 +25,8 @@ WORKDIR /app
 
 COPY --from=build /out /app
 COPY --from=build /app/apps/backend/dist /app/dist
+COPY --from=build /app/apps/backend/generated /app/generated
+COPY --from=build /app/apps/backend/drizzle /app/drizzle
 COPY --from=build /app/apps/frontend/dist /app/public
 
 EXPOSE 3000

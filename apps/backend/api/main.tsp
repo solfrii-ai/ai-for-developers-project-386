@@ -1,0 +1,64 @@
+import "@typespec/http";
+
+using TypeSpec.Http;
+
+@service(#{ title: "Calendar Calls API" })
+namespace CalendarCalls;
+
+union MeetingDuration {
+  15,
+  30,
+  45,
+  60,
+  75,
+  90,
+  105,
+  120,
+}
+
+model MeetingType {
+  @pattern("^[a-z0-9]{3}-[a-z0-9]{5}$")
+  id: string;
+  name: string;
+  description: string;
+  duration: MeetingDuration;
+}
+
+model CreateMeetingType {
+  @minLength(1)
+  @maxLength(100)
+  name: string;
+
+  @minLength(1)
+  @maxLength(1000)
+  description: string;
+
+  duration: MeetingDuration;
+}
+
+model FieldError {
+  field: string;
+  message: string;
+}
+
+model ValidationErrorResponse {
+  message: string;
+  errors: FieldError[];
+}
+
+model MeetingTypeCreated {
+  @statusCode statusCode: 201;
+  @body body: MeetingType;
+}
+
+@error
+model ValidationError {
+  @statusCode statusCode: 400;
+  @body body: ValidationErrorResponse;
+}
+
+@route("/api/meeting-types")
+interface MeetingTypeOperations {
+  @get list(): MeetingType[];
+  @post create(@body body: CreateMeetingType): MeetingTypeCreated | ValidationError;
+}

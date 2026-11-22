@@ -34,6 +34,7 @@ Workspace содержит два приложения: React + Vite frontend в
 ```sh
 mise install
 pnpm install
+pnpm --filter frontend exec playwright install chromium
 ```
 
 Зависимости обоих приложений устанавливаются из корня pnpm workspace и фиксируются в одном общем `pnpm-lock.yaml`.
@@ -46,15 +47,21 @@ pnpm dev
 
 Команда средствами pnpm параллельно запускает frontend и backend. Отдельный пакет-оркестратор не используется.
 
-- Главная страница frontend доступна по адресу `http://localhost:5173/`.
+- Главная страница frontend доступна по адресу `http://localhost:5173/`, страница владельца — `http://localhost:5173/admin`.
 - Backend слушает порт `3000`. Прямая проверка: `http://localhost:3000/api/health`.
 - Vite проксирует запросы с префиксом `/api` на `http://localhost:3000`. Frontend вызывает API по относительному адресу `/api` без CORS и без переменных окружения.
+
+Перед запуском backend автоматически применяет Drizzle-миграции. Типы встреч хранятся в PGLite в `apps/backend/data`; необязательная переменная `DATA_DIR` позволяет выбрать другой каталог.
+
+### Контракт и миграции
+
+Предметные операции описаны в `apps/backend/api/main.tsp`. После изменения контракта выполните `pnpm --filter backend api:generate && pnpm --filter frontend api:generate`. Production-сборка повторяет генерацию автоматически. После изменения схемы БД новая миграция создаётся командой `pnpm --filter backend drizzle:generate`.
 
 ### Docker
 
 ```sh
 docker build -t calendar-calls .
-docker run --rm -p 3000:3000 calendar-calls
+docker run --rm -p 3000:3000 -v calendar-calls-data:/app/data calendar-calls
 ```
 
 Контейнер стартует автоматически. Порт берётся из `PORT`, по умолчанию `3000`. Страница и `/api/health` доступны на одном порту.
@@ -70,7 +77,7 @@ pnpm build
 mise run check
 ```
 
-`pnpm lint`, `pnpm test` и `pnpm build` охватывают frontend и backend. `pnpm build` проверяет TypeScript и создаёт production-сборки в `apps/frontend/dist` и `apps/backend/dist`. `mise run check` проверяет существующие GitHub Actions workflows.
+`pnpm lint`, `pnpm test` и `pnpm build` охватывают frontend и backend. `pnpm test` запускает Vitest и Playwright: браузерный сценарий сам поднимает изолированные frontend/backend с временной БД. `pnpm build` компилирует OpenAPI и клиентские типы, проверяет TypeScript и создаёт production-сборки в `apps/frontend/dist` и `apps/backend/dist`. `mise run check` проверяет существующие GitHub Actions workflows.
 
 
 ## Роли

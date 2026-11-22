@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
+import AdminPage from './pages/AdminPage'
 
 function isAbortError(error: unknown) {
   return error instanceof Error && error.name === 'AbortError'
 }
 
-export default function App() {
+function HealthPage() {
   const [status, setStatus] = useState('Проверяем API…')
 
   useEffect(() => {
@@ -37,4 +38,12 @@ export default function App() {
       </div>
     </main>
   )
+}
+
+export default function App() {
+  if (window.location.pathname === '/admin') {
+    return <AdminPage />
+  }
+
+  return <HealthPage />
 }

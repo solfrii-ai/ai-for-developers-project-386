@@ -6,6 +6,6 @@
     "dev": "pnpm --recursive --parallel dev",
     "lint": "pnpm --recursive lint",
     "test": "pnpm --recursive test",
-    "build": "pnpm --recursive build"
+    "build": "pnpm --filter backend build && pnpm --filter frontend build"
   }
 }

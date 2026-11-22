@@ -14,7 +14,9 @@
 
 ## Current state
 - The pnpm workspace contains two apps: a React + Vite + TypeScript frontend in `apps/frontend` and a Node.js + Express backend in `apps/backend`. The stack is documented in `docs/adr/0002-technology-stack.md`.
-- Run `mise install` and `pnpm install` from the root. Dependencies stay in one shared `pnpm-lock.yaml`. Use `pnpm dev` to start both apps in parallel through pnpm, with no orchestrator package. The backend listens on port `3000`; Vite proxies `/api` to that port. Use `pnpm lint`, `pnpm test`, and `pnpm build` to check both apps, and `mise run check` to lint the OpenCode workflows. No environment variables are required.
+- Run `mise install` and `pnpm install` from the root. Dependencies stay in one shared `pnpm-lock.yaml`. Use `pnpm dev` to start both apps in parallel through pnpm, with no orchestrator package. The backend listens on port `3000`; Vite proxies `/api` to that port. No environment variables are required; PGLite stores local data in `apps/backend/data`.
+- Domain operations start in `apps/backend/api/main.tsp`; backend and frontend `api:generate` scripts compile OpenAPI and generated client types. Drizzle migrations live in `apps/backend/drizzle` and run before the backend accepts traffic.
+- Use `pnpm lint`, `pnpm test`, and `pnpm build` to check both apps, and `mise run check` to lint the OpenCode workflows. Install Chromium with `pnpm --filter frontend exec playwright install chromium` before `pnpm test`; the frontend test script runs both Vitest and real Playwright page tests.
 - The root `Dockerfile` builds a self-starting production container. The process reads `PORT` (default `3000`) and serves both the built frontend and `/api`. See `docs/adr/0003-production-container.md`.
 - OpenCode runs from `/opencode` comments through `.github/workflows/opencode.yml`; its security exception is documented in `docs/adr/0001-opencode-via-github-actions.md`.
 - See `README.md` for setup, startup, and verification details; update it and this file when workflows change.
