@@ -1,6 +1,6 @@
 import { randomInt } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
-import { asc } from 'drizzle-orm'
+import { asc, eq } from 'drizzle-orm'
 import express, { type ErrorRequestHandler } from 'express'
 import * as OpenApiValidator from 'express-openapi-validator'
 import { createDatabase } from './db/client.ts'
@@ -86,6 +86,22 @@ export async function createApplication({
 
   application.get('/api/meeting-types', async (_request, response) => {
     response.status(200).json(await listTypes())
+  })
+
+  application.get('/api/meeting-types/:id', async (request, response) => {
+    const [type] = await db.select({
+      id: meetingTypes.id,
+      name: meetingTypes.name,
+      description: meetingTypes.description,
+      duration: meetingTypes.duration,
+    }).from(meetingTypes).where(eq(meetingTypes.id, request.params.id)).limit(1)
+
+    if (!type) {
+      response.status(404).json({ message: 'Тип встречи не найден' })
+      return
+    }
+
+    response.status(200).json(type)
   })
 
   application.post('/api/meeting-types', async (request, response) => {

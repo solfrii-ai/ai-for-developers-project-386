@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import AdminPage from './pages/AdminPage'
+import BookPage from './pages/BookPage'
+import BookTypePage from './pages/BookTypePage'
 
 function isAbortError(error: unknown) {
   return error instanceof Error && error.name === 'AbortError'
@@ -43,6 +45,15 @@ function HealthPage() {
 export default function App() {
   if (window.location.pathname === '/admin') {
     return <AdminPage />
+  }
+
+  if (window.location.pathname === '/book') {
+    return <BookPage />
+  }
+
+  const typeId = window.location.pathname.match(/^\/book\/([^/]+)$/)?.[1]
+  if (typeId) {
+    return <BookTypePage id={decodeURIComponent(typeId)} />
   }
 
   return <HealthPage />

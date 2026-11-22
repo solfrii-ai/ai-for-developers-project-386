@@ -51,6 +51,16 @@ model MeetingTypeCreated {
   @body body: MeetingType;
 }
 
+model NotFoundResponse {
+  message: string;
+}
+
+@error
+model MeetingTypeNotFound {
+  @statusCode statusCode: 404;
+  @body body: NotFoundResponse;
+}
+
 @error
 model ValidationError {
   @statusCode statusCode: 400;
@@ -60,5 +70,6 @@ model ValidationError {
 @route("/api/meeting-types")
 interface MeetingTypeOperations {
   @get list(): MeetingType[];
+  @get @route("/{id}") read(@path id: string): MeetingType | MeetingTypeNotFound;
   @post create(@body body: CreateMeetingType): MeetingTypeCreated | ValidationError;
 }
