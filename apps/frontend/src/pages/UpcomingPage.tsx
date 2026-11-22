@@ -9,11 +9,20 @@ function formatTime(value: string) {
   return `${String(date.getUTCHours()).padStart(2, '0')}:${String(date.getUTCMinutes()).padStart(2, '0')}`
 }
 
-function formatDateTime(value: string) {
+function formatDate(value: string) {
   const date = new Date(value)
   const day = String(date.getUTCDate()).padStart(2, '0')
   const month = String(date.getUTCMonth() + 1).padStart(2, '0')
-  return `${day}.${month}.${date.getUTCFullYear()}, ${formatTime(value)}`
+  return `${day}.${month}.${date.getUTCFullYear()}`
+}
+
+function formatDateTime(value: string) {
+  return `${formatDate(value)}, ${formatTime(value)}`
+}
+
+function formatInterval(start: string, end: string) {
+  const endLabel = formatDate(start) === formatDate(end) ? formatTime(end) : formatDateTime(end)
+  return `${formatDateTime(start)} - ${endLabel}`
 }
 
 export default function UpcomingPage() {
@@ -78,7 +87,7 @@ export default function UpcomingPage() {
                 <h2 className="font-medium text-slate-950">{meeting.meetingTypeName}</h2>
                 <p className="mt-2 text-sm text-slate-700">{meeting.guestName}</p>
                 <p className="text-sm text-slate-600">{meeting.guestEmail}</p>
-                <p className="mt-3 text-sm text-slate-700">{formatTime(meeting.start)} - {formatTime(meeting.end)}</p>
+                <p className="mt-3 text-sm text-slate-700">{formatInterval(meeting.start, meeting.end)}</p>
                 <p className="text-sm text-slate-500">Создано: {formatDateTime(meeting.createdAt)}</p>
               </article>
             ))}

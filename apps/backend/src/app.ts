@@ -37,14 +37,14 @@ function isGuestEmail(value: string) {
   return labels.length >= 2 && labels.every((label) => label.length > 0)
 }
 
-function isExclusionViolation(error: unknown) {
+function hasSqlCode(error: unknown, code: string) {
   const queue = [error]
   while (queue.length > 0) {
     const current = queue.shift()
     if (!current || typeof current !== 'object') {
       continue
     }
-    if ('code' in current && current.code === '23P01') {
+    if ('code' in current && current.code === code) {
       return true
     }
     if ('cause' in current) {
@@ -240,16 +240,18 @@ export async function createApplication({
 
     const createdAt = now()
     try {
-      await db.insert(meetings).values({
-        meetingTypeId: type.id,
-        startAt: new Date(offered.start),
-        endAt: new Date(offered.end),
-        guestName,
-        guestEmail,
-        createdAt,
+      await db.transaction(async (tx) => {
+        await tx.insert(meetings).values({
+          meetingTypeId: type.id,
+          startAt: new Date(offered.start),
+          endAt: new Date(offered.end),
+          guestName,
+          guestEmail,
+          createdAt,
+        })
       })
     } catch (error) {
-      if (isExclusionViolation(error)) {
+      if (hasSqlCode(error, '23P01')) {
         response.status(409).json({ message: conflictMessage })
         return
       }
@@ -294,13 +296,27 @@ export async function createApplication({
       return
     }
 
-    const type = {
-      id: generateId(await listTypes()),
-      name,
-      description,
-      duration,
+    let type: MeetingType | undefined
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const candidate = {
+        id: generateId(await listTypes()),
+        name,
+        description,
+        duration,
+      }
+      try {
+        await db.insert(meetingTypes).values(candidate)
+        type = candidate
+        break
+      } catch (error) {
+        if (!hasSqlCode(error, '23505') || attempt === 7) {
+          throw error
+        }
+      }
     }
-    await db.insert(meetingTypes).values(type)
+    if (!type) {
+      throw new Error('Не удалось создать тип встречи')
+    }
     response.status(201).json(type)
   })
 

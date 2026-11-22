@@ -88,3 +88,53 @@ test('occupied intervals stay hidden and a lost confirmation preserves the guest
   await expect(page.getByLabel('Имя')).toHaveValue('Второй')
   await expect(page.getByLabel('Почта')).toHaveValue('second@example.com')
 })
+
+test('a lost last slot still shows the conflict message', async ({ page, request }) => {
+  const created = await request.post('/api/meeting-types', {
+    data: { name: 'Последний слот', description: 'Остался один интервал', duration: 30 },
+  })
+  const type = await created.json() as { id: string }
+  const availability = await request.get(`/api/meeting-types/${type.id}/availability`)
+  const monday = (await availability.json() as { slots: { start: string, end: string }[] }).slots
+    .filter((slot) => slot.start.startsWith('2026-03-02'))
+  const last = monday.at(-1)
+  if (!last) {
+    throw new Error('Monday has no free slot')
+  }
+  for (const slot of monday.slice(0, -1)) {
+    const booked = await request.post('/api/bookings', {
+      data: {
+        meetingTypeId: type.id,
+        start: slot.start,
+        guestName: 'Занято',
+        guestEmail: 'taken@example.com',
+      },
+    })
+    expect(booked.ok()).toBeTruthy()
+  }
+
+  const label = `${last.start.slice(11, 16)} - ${last.end.slice(11, 16)}`
+  await page.goto(`/book/${type.id}`)
+  await page.getByRole('button', { name: label }).click()
+  await page.getByRole('button', { name: 'Продолжить' }).click()
+  await page.getByLabel('Имя').fill('Гость')
+  await page.getByLabel('Почта').fill('guest@example.com')
+  const taken = await request.post('/api/bookings', {
+    data: {
+      meetingTypeId: type.id,
+      start: last.start,
+      guestName: 'Другой',
+      guestEmail: 'other@example.com',
+    },
+  })
+  expect(taken.ok()).toBeTruthy()
+
+  await page.getByRole('button', { name: 'Подтвердить бронирование' }).click()
+  await expect(page.getByRole('alert')).toHaveText('Встреча не создана: выбранный слот уже занят. Выберите другой свободный слот.')
+  await expect(page.getByText('На эту дату свободных слотов нет. Выберите другую дату', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: /вторник, 3 марта/ }).click()
+  await page.getByRole('button', { name: '09:00 - 09:30' }).click()
+  await page.getByRole('button', { name: 'Продолжить' }).click()
+  await expect(page.getByLabel('Имя')).toHaveValue('Гость')
+  await expect(page.getByLabel('Почта')).toHaveValue('guest@example.com')
+})

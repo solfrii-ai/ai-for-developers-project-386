@@ -40,7 +40,7 @@ test('landing links to booking and the public upcoming list', async ({ page, req
   await expect(row).toContainText('Консультация')
   await expect(row).toContainText('Гость')
   await expect(row).toContainText('guest@example.com')
-  await expect(row).toContainText('09:00 - 09:30')
+  await expect(row).toContainText('02.03.2026, 09:00 - 09:30')
   await expect(row).toContainText('02.03.2026, 08:00')
   await expect(page.getByText('UTC')).toHaveCount(0)
   await expect(page.getByRole('button', { name: /Редактировать|Отменить|Перенести/ })).toHaveCount(0)
