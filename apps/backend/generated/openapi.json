@@ -194,6 +194,27 @@
           }
         }
       }
+    },
+    "/api/upcoming": {
+      "get": {
+        "operationId": "UpcomingOperations_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UpcomingMeeting"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -412,6 +433,40 @@
         "properties": {
           "message": {
             "type": "string"
+          }
+        }
+      },
+      "UpcomingMeeting": {
+        "type": "object",
+        "required": [
+          "meetingTypeName",
+          "start",
+          "end",
+          "guestName",
+          "guestEmail",
+          "createdAt"
+        ],
+        "properties": {
+          "meetingTypeName": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "guestName": {
+            "type": "string"
+          },
+          "guestEmail": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },

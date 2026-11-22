@@ -132,3 +132,17 @@ interface MeetingTypeOperations {
 interface BookingOperations {
   @post create(@body body: CreateBooking): BookingCreated | ValidationError | BookingConflict | MeetingTypeNotFound;
 }
+
+model UpcomingMeeting {
+  meetingTypeName: string;
+  start: utcDateTime;
+  end: utcDateTime;
+  guestName: string;
+  guestEmail: string;
+  createdAt: utcDateTime;
+}
+
+@route("/api/upcoming")
+interface UpcomingOperations {
+  @get list(): UpcomingMeeting[];
+}

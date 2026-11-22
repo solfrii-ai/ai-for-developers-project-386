@@ -1,6 +1,6 @@
 import { randomInt } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
-import { asc, eq } from 'drizzle-orm'
+import { asc, eq, gte } from 'drizzle-orm'
 import express, { type ErrorRequestHandler } from 'express'
 import * as OpenApiValidator from 'express-openapi-validator'
 import { availabilityFor } from './availability.ts'
@@ -122,6 +122,7 @@ export async function createApplication({
     validateResponses: true,
   })
   application.use('/api/meeting-types', openApi)
+  application.use('/api/upcoming', openApi)
   application.use('/api/bookings', (request: express.Request, _response: express.Response, next: express.NextFunction) => {
     if (request.method === 'POST' && request.body) {
       request.body = {
@@ -171,6 +172,29 @@ export async function createApplication({
       start: interval.startAt.toISOString(),
       end: interval.endAt.toISOString(),
     }))))
+  })
+
+  application.get('/api/upcoming', async (_request, response) => {
+    const rows = await db.select({
+      meetingTypeName: meetingTypes.name,
+      startAt: meetings.startAt,
+      endAt: meetings.endAt,
+      guestName: meetings.guestName,
+      guestEmail: meetings.guestEmail,
+      createdAt: meetings.createdAt,
+    }).from(meetings)
+      .innerJoin(meetingTypes, eq(meetings.meetingTypeId, meetingTypes.id))
+      .where(gte(meetings.startAt, now()))
+      .orderBy(asc(meetings.startAt))
+
+    response.status(200).json(rows.map((row) => ({
+      meetingTypeName: row.meetingTypeName,
+      start: row.startAt.toISOString(),
+      end: row.endAt.toISOString(),
+      guestName: row.guestName,
+      guestEmail: row.guestEmail,
+      createdAt: row.createdAt.toISOString(),
+    })))
   })
 
   application.post('/api/bookings', async (request, response) => {
