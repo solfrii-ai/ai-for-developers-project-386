@@ -1,40 +1,26 @@
-import { useEffect, useState } from 'react'
-
-function isAbortError(error: unknown) {
-  return error instanceof Error && error.name === 'AbortError'
-}
+import AdminPage from './pages/AdminPage'
+import BookPage from './pages/BookPage'
+import BookTypePage from './pages/BookTypePage'
+import LandingPage from './pages/LandingPage'
+import UpcomingPage from './pages/UpcomingPage'
 
 export default function App() {
-  const [status, setStatus] = useState('Проверяем API…')
+  if (window.location.pathname === '/admin') {
+    return <AdminPage />
+  }
 
-  useEffect(() => {
-    const controller = new AbortController()
+  if (window.location.pathname === '/book') {
+    return <BookPage />
+  }
 
-    void fetch('/api/health', { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('API unavailable')
-        }
-        setStatus('API доступно')
-      })
-      .catch((error: unknown) => {
-        if (isAbortError(error)) {
-          return
-        }
-        setStatus('API недоступно')
-      })
+  const typeId = window.location.pathname.match(/^\/book\/([^/]+)$/)?.[1]
+  if (typeId) {
+    return <BookTypePage id={decodeURIComponent(typeId)} />
+  }
 
-    return () => {
-      controller.abort()
-    }
-  }, [])
+  if (window.location.pathname === '/upcoming') {
+    return <UpcomingPage />
+  }
 
-  return (
-    <main className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <h1>Календарь звонков</h1>
-        <p>{status}</p>
-      </div>
-    </main>
-  )
+  return <LandingPage />
 }

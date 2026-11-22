@@ -1,9 +1,12 @@
-import { app, serveStatic } from './app.ts'
+import path from 'node:path'
+import { createApplication } from './app.ts'
 
 const port = Number(process.env.PORT ?? 3000)
-
-if (process.env.STATIC_DIR) {
-  serveStatic(process.env.STATIC_DIR)
-}
+const configuredNow = process.env.NOW ? new Date(process.env.NOW) : undefined
+const { app } = await createApplication({
+  dataDir: process.env.DATA_DIR ?? path.resolve('data'),
+  staticDir: process.env.STATIC_DIR,
+  now: configuredNow && !Number.isNaN(configuredNow.getTime()) ? () => configuredNow : undefined,
+})
 
 app.listen(port, '0.0.0.0')
