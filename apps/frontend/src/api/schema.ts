@@ -68,6 +68,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/upcoming": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["UpcomingOperations_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -128,6 +144,17 @@ export interface components {
         };
         NotFoundResponse: {
             message: string;
+        };
+        UpcomingMeeting: {
+            meetingTypeName: string;
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+            guestName: string;
+            guestEmail: string;
+            /** Format: date-time */
+            createdAt: string;
         };
         ValidationErrorResponse: {
             message: string;
@@ -304,6 +331,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NotFoundResponse"];
+                };
+            };
+        };
+    };
+    UpcomingOperations_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The request has succeeded. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpcomingMeeting"][];
                 };
             };
         };

@@ -19,6 +19,7 @@ const suites = [
   { name: 'book', file: 'book.spec.ts', appPort: 5174, apiPort: 3001, readyPath: '/book', now: '' },
   { name: 'availability', file: 'availability.spec.ts', appPort: 5175, apiPort: 3002, readyPath: '/book', now: '2026-03-02T08:00:00.000Z' },
   { name: 'booking', file: 'booking.spec.ts', appPort: 5176, apiPort: 3003, readyPath: '/book', now: '2026-03-02T08:00:00.000Z' },
+  { name: 'landing', file: 'landing.spec.ts', appPort: 5177, apiPort: 3004, readyPath: '/', now: '2026-03-02T08:00:00.000Z' },
 ]
 const dataDirs = suites.map(() => mkdtempSync(path.join(tmpdir(), 'calendar-calls-e2e-')))
 process.env.E2E_DATA_DIRS = dataDirs.join(':')
