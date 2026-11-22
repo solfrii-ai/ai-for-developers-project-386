@@ -36,10 +36,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/meeting-types/{id}/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MeetingTypeOperations_availability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        Availability: {
+            days: components["schemas"]["AvailabilityDay"][];
+            slots: components["schemas"]["AvailabilitySlot"][];
+        };
+        AvailabilityDay: {
+            date: string;
+            /** Format: int32 */
+            freeCount: number;
+        };
+        AvailabilitySlot: {
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+        };
         CreateMeetingType: {
             name: string;
             description: string;
@@ -144,6 +175,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeetingType"];
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotFoundResponse"];
+                };
+            };
+        };
+    };
+    MeetingTypeOperations_availability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The request has succeeded. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Availability"];
                 };
             };
             /** @description The server cannot find the requested resource. */

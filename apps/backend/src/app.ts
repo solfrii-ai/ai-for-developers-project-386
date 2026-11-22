@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { asc, eq } from 'drizzle-orm'
 import express, { type ErrorRequestHandler } from 'express'
 import * as OpenApiValidator from 'express-openapi-validator'
+import { availabilityFor } from './availability.ts'
 import { createDatabase } from './db/client.ts'
 import { meetingTypes } from './db/schema.ts'
 
@@ -49,9 +50,11 @@ const handleValidationError: ErrorRequestHandler = (error, _request, response, n
 export async function createApplication({
   dataDir,
   staticDir,
+  now = () => new Date(),
 }: {
   dataDir: string
   staticDir?: string
+  now?: () => Date
 }) {
   const { db, close } = await createDatabase(dataDir)
   const application = express()
@@ -102,6 +105,19 @@ export async function createApplication({
     }
 
     response.status(200).json(type)
+  })
+
+  application.get('/api/meeting-types/:id/availability', async (request, response) => {
+    const [type] = await db.select({
+      duration: meetingTypes.duration,
+    }).from(meetingTypes).where(eq(meetingTypes.id, request.params.id)).limit(1)
+
+    if (!type) {
+      response.status(404).json({ message: 'Тип встречи не найден' })
+      return
+    }
+
+    response.status(200).json(availabilityFor(type.duration, now()))
   })
 
   application.post('/api/meeting-types', async (request, response) => {
