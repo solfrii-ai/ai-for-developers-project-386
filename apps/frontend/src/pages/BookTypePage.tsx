@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { apiClient } from '@/api/client'
 import type { components } from '@/api/schema'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 type MeetingType = components['schemas']['MeetingType']
 type Availability = components['schemas']['Availability']
@@ -62,6 +65,12 @@ export default function BookTypePage({ id }: { id: string }) {
   const [selectedSlot, setSelectedSlot] = useState('')
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
+  const [view, setView] = useState<'slots' | 'confirm' | 'done'>('slots')
+  const [guestName, setGuestName] = useState('')
+  const [guestEmail, setGuestEmail] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<'guestName' | 'guestEmail', string>>>({})
+  const [conflict, setConflict] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -115,6 +124,69 @@ export default function BookTypePage({ id }: { id: string }) {
 
     return () => controller.abort()
   }, [id])
+
+  const reloadAvailability = async () => {
+    const result = await apiClient.GET('/api/meeting-types/{id}/availability', {
+      params: { path: { id } },
+    })
+    if (result.data) {
+      setAvailability(result.data)
+    }
+  }
+
+  const confirmBooking = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const errors: Partial<Record<'guestName' | 'guestEmail', string>> = {}
+    if (!guestName.trim()) {
+      errors.guestName = 'Введите имя'
+    }
+    if (!guestEmail.trim()) {
+      errors.guestEmail = 'Введите почту'
+    }
+    setFieldErrors(errors)
+    if (Object.keys(errors).length > 0 || !selectedSlot) {
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const result = await apiClient.POST('/api/bookings', {
+        body: {
+          meetingTypeId: id,
+          start: selectedSlot,
+          guestName,
+          guestEmail,
+        },
+      })
+      if (result.response.status === 409) {
+        const message = result.error && 'message' in result.error ? result.error.message : ''
+        setConflict(message)
+        setSelectedSlot('')
+        setView('slots')
+        await reloadAvailability()
+        return
+      }
+      if (result.response.status === 400 && result.error && 'errors' in result.error) {
+        const nextErrors: Partial<Record<'guestName' | 'guestEmail', string>> = {}
+        for (const item of result.error.errors) {
+          if (item.field === 'guestName' || item.field === 'guestEmail') {
+            nextErrors[item.field] = item.message
+          }
+        }
+        setFieldErrors(nextErrors)
+        return
+      }
+      if (!result.data) {
+        setConflict('Не удалось создать бронирование')
+        return
+      }
+      setConflict('')
+      setView('done')
+      await reloadAvailability()
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   const days = availability?.days ?? []
   const months = [...new Set(days.map((day) => day.date.slice(0, 7)))]
@@ -219,7 +291,27 @@ export default function BookTypePage({ id }: { id: string }) {
             </section>
             <section aria-labelledby="slot-status" className="rounded-xl border border-slate-200 bg-white p-5">
               <h2 id="slot-status" className="font-medium text-slate-950">Статус слотов</h2>
-              {windowEmpty ? (
+              {view === 'done' ? (
+                <p role="status" className="mt-4 text-sm text-green-700">Бронирование подтверждено. До встречи!</p>
+              ) : view === 'confirm' && selected ? (
+                <form aria-label="Подтверждение бронирования" noValidate onSubmit={confirmBooking} className="mt-4 space-y-4">
+                  <p className="text-sm text-slate-600">{type.name}, {formatInterval(selected)}</p>
+                  <div>
+                    <Label htmlFor="guest-name">Имя</Label>
+                    <Input id="guest-name" className="mt-1" value={guestName} onChange={(event) => setGuestName(event.target.value)} aria-invalid={Boolean(fieldErrors.guestName)} aria-describedby={fieldErrors.guestName ? 'guest-name-error' : undefined} />
+                    {fieldErrors.guestName && <p id="guest-name-error" role="alert" className="mt-1 text-sm text-red-700">{fieldErrors.guestName}</p>}
+                  </div>
+                  <div>
+                    <Label htmlFor="guest-email">Почта</Label>
+                    <Input id="guest-email" className="mt-1" value={guestEmail} onChange={(event) => setGuestEmail(event.target.value)} aria-invalid={Boolean(fieldErrors.guestEmail)} aria-describedby={fieldErrors.guestEmail ? 'guest-email-error' : undefined} />
+                    {fieldErrors.guestEmail && <p id="guest-email-error" role="alert" className="mt-1 text-sm text-red-700">{fieldErrors.guestEmail}</p>}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" onClick={() => setView('slots')}>Назад</Button>
+                    <Button type="submit" disabled={submitting} className="bg-slate-950 text-white hover:bg-slate-800">{submitting ? 'Подтверждение…' : 'Подтвердить бронирование'}</Button>
+                  </div>
+                </form>
+              ) : windowEmpty ? (
                 <div className="mt-4">
                   <p className="rounded-lg bg-slate-100 p-4 text-sm text-slate-600">В ближайшие 14 дней свободных слотов нет</p>
                   <a href="/book" className="mt-4 inline-flex text-sm font-medium text-slate-700 underline underline-offset-4">Выбрать другой тип встречи</a>
@@ -228,18 +320,23 @@ export default function BookTypePage({ id }: { id: string }) {
                 <p className="mt-4 rounded-lg bg-slate-100 p-4 text-sm text-slate-600">На эту дату свободных слотов нет. Выберите другую дату</p>
               ) : (
                 <div className="mt-4 space-y-2">
+                  {conflict && <p role="alert" className="rounded-lg bg-red-50 p-4 text-sm text-red-700">{conflict}</p>}
                   {slots.map((slot) => (
                     <button
                       key={slot.start}
                       type="button"
                       aria-pressed={slot.start === selectedSlot}
                       className={`flex w-full justify-between rounded-lg border px-3 py-2 text-sm ${slot.start === selectedSlot ? 'border-orange-400 bg-orange-50' : 'border-slate-200'}`}
-                      onClick={() => setSelectedSlot(slot.start)}
+                      onClick={() => {
+                        setSelectedSlot(slot.start)
+                        setConflict('')
+                      }}
                     >
                       <span>{formatInterval(slot)}</span>
                       <span className="text-slate-500">Свободно</span>
                     </button>
                   ))}
+                  <Button type="button" disabled={!selectedSlot} onClick={() => setView('confirm')} className="mt-2 w-full bg-slate-950 text-white hover:bg-slate-800">Продолжить</Button>
                 </div>
               )}
             </section>

@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/api/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["BookingOperations_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meeting-types": {
         parameters: {
             query?: never;
@@ -71,6 +87,28 @@ export interface components {
             /** Format: date-time */
             end: string;
         };
+        Booking: {
+            meetingTypeId: string;
+            meetingTypeName: string;
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+            guestName: string;
+            guestEmail: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ConflictResponse: {
+            message: string;
+        };
+        CreateBooking: {
+            meetingTypeId: string;
+            /** Format: date-time */
+            start: string;
+            guestName: string;
+            guestEmail: string;
+        };
         CreateMeetingType: {
             name: string;
             description: string;
@@ -104,6 +142,57 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    BookingOperations_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateBooking"];
+            };
+        };
+        responses: {
+            /** @description The request has succeeded and a new resource has been created as a result. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Booking"];
+                };
+            };
+            /** @description The server could not understand the request due to invalid syntax. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorResponse"];
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotFoundResponse"];
+                };
+            };
+            /** @description The request conflicts with the current state of the server. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConflictResponse"];
+                };
+            };
+        };
+    };
     MeetingTypeOperations_list: {
         parameters: {
             query?: never;

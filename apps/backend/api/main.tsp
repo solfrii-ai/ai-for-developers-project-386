@@ -66,6 +66,44 @@ model Availability {
   slots: AvailabilitySlot[];
 }
 
+model CreateBooking {
+  meetingTypeId: string;
+  start: utcDateTime;
+
+  @minLength(1)
+  @maxLength(100)
+  guestName: string;
+
+  @minLength(1)
+  @maxLength(254)
+  guestEmail: string;
+}
+
+model Booking {
+  meetingTypeId: string;
+  meetingTypeName: string;
+  start: utcDateTime;
+  end: utcDateTime;
+  guestName: string;
+  guestEmail: string;
+  createdAt: utcDateTime;
+}
+
+model BookingCreated {
+  @statusCode statusCode: 201;
+  @body body: Booking;
+}
+
+model ConflictResponse {
+  message: string;
+}
+
+@error
+model BookingConflict {
+  @statusCode statusCode: 409;
+  @body body: ConflictResponse;
+}
+
 model NotFoundResponse {
   message: string;
 }
@@ -88,4 +126,9 @@ interface MeetingTypeOperations {
   @get @route("/{id}") read(@path id: string): MeetingType | MeetingTypeNotFound;
   @get @route("/{id}/availability") availability(@path id: string): Availability | MeetingTypeNotFound;
   @post create(@body body: CreateMeetingType): MeetingTypeCreated | ValidationError;
+}
+
+@route("/api/bookings")
+interface BookingOperations {
+  @post create(@body body: CreateBooking): BookingCreated | ValidationError | BookingConflict | MeetingTypeNotFound;
 }
